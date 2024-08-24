@@ -18,16 +18,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     
-    private func configureWindowScene(_ windowScene: UIWindowScene) {
-        window = UIWindow(windowScene: windowScene)
-        
-        let mainViewController = MainViewController()
-        
-        window?.rootViewController = UINavigationController(rootViewController: mainViewController)
-        window?.makeKeyAndVisible()
-    }
-    
-    
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
         // This occurs shortly after the scene enters the background, or when its session is discarded.
@@ -56,9 +46,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
 
         // Save changes in the application's managed object context when the application transitions to the background.
-        (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
+        saveCoreDataContext()
     }
-
-
+    
 }
 
+
+extension SceneDelegate {
+    
+    private func configureWindowScene(_ windowScene: UIWindowScene) {
+        window = UIWindow(windowScene: windowScene)
+        
+        let tasksViewController = TasksRouter.configureModule()
+        
+        window?.rootViewController = UINavigationController(rootViewController: tasksViewController)
+        window?.makeKeyAndVisible()
+    }
+    
+}
+
+
+extension SceneDelegate {
+    
+    private func saveCoreDataContext() {
+        let coreDataService = CoreDataService()
+        do { try coreDataService.saveContext() } catch {}
+    }
+    
+}
