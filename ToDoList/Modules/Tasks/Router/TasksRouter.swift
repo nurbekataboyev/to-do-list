@@ -8,12 +8,12 @@
 import UIKit
 
 protocol TasksRouterProtocol {
-    static func assembleModule() -> UIViewController
+    static func configureModule() -> UIViewController
 }
 
 class TasksRouter: TasksRouterProtocol {
     
-    static func assembleModule() -> UIViewController {
+    static func configureModule() -> UIViewController {
         let loadingScreenManager = LoadingScreenManager()
         let view = TasksViewController(loadingScreenManager: loadingScreenManager)
         

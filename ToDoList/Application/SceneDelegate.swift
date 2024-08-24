@@ -57,7 +57,7 @@ extension SceneDelegate {
     private func configureWindowScene(_ windowScene: UIWindowScene) {
         window = UIWindow(windowScene: windowScene)
         
-        let tasksViewController = TasksRouter.assembleModule()
+        let tasksViewController = TasksRouter.configureModule()
         
         window?.rootViewController = UINavigationController(rootViewController: tasksViewController)
         window?.makeKeyAndVisible()
