@@ -11,14 +11,14 @@ import Combine
 protocol TasksInteractorInput {
     func fetchTasks()
     
-    func updateTask(_ task: TaskModel)
-    func deleteTask(_ task: TaskModel)
+    func updateTask(_ task: TaskEntity)
+    func deleteTask(_ task: TaskEntity)
 }
 
 protocol TasksInteractorOutput: AnyObject {
-    func didFetch(tasks: [TaskModel])
-    func didUpdate(task: TaskModel)
-    func didDelete(task: TaskModel)
+    func didFetch(tasks: [TaskEntity])
+    func didUpdate(task: TaskEntity)
+    func didDelete(task: TaskEntity)
     
     func didFail(with error: TDError)
 }
@@ -50,7 +50,7 @@ class TasksInteractor: TasksInteractorInput {
     }
     
     
-    public func updateTask(_ task: TaskModel) {
+    public func updateTask(_ task: TaskEntity) {
         coreDataService.updateTask(task)
             .receive(on: DispatchQueue.global(qos: .background))
             .sink { [weak self] completion in
@@ -72,7 +72,7 @@ class TasksInteractor: TasksInteractorInput {
     }
     
     
-    public func deleteTask(_ task: TaskModel) {
+    public func deleteTask(_ task: TaskEntity) {
         coreDataService.deleteTask(task)
             .receive(on: DispatchQueue.global(qos: .background))
             .sink { [weak self] completion in
@@ -117,7 +117,6 @@ extension TasksInteractor {
                 guard let self else { return }
                 
                 saveServerTasksToLocal(serverTasks) {
-                    self.userDefaultsService.setFetchStatus(true)
                     self.fetchLocalTasks()
                 }
                 
@@ -143,15 +142,19 @@ extension TasksInteractor {
                 
             } receiveValue: { [weak self] tasks in
                 guard let self else { return }
+                
+                let taskEntities = tasks.map { $0.toTaskEntity() }
+                
                 DispatchQueue.main.async {
-                    self.output?.didFetch(tasks: tasks)
+                    self.output?.didFetch(tasks: taskEntities)
                 }
+                
             }
             .store(in: &cancellables)
     }
     
     
-    private func saveServerTasksToLocal(_ serverTasks: ServerTasks, completionBlock: @escaping () -> ()) {
+    private func saveServerTasksToLocal(_ serverTasks: ServerTasks, complete: @escaping () -> ()) {
         let tasks = serverTasks.tasks.map { $0.toTaskEntity() }
         
         let dispatchGroup = DispatchGroup()
@@ -177,8 +180,10 @@ extension TasksInteractor {
                 .store(in: &cancellables)
         }
         
-        dispatchGroup.notify(queue: DispatchQueue.global(qos: .background)) {
-            completionBlock()
+        dispatchGroup.notify(queue: DispatchQueue.global(qos: .background)) { [weak self] in
+            guard let self else { return }
+            userDefaultsService.setFetchStatus(true)
+            complete()
         }
     }
     

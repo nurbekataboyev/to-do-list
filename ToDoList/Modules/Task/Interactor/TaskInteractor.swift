@@ -10,12 +10,12 @@ import Combine
 
 protocol TaskInteractorInput {
     func createTask(_ taskEntity: TaskEntity)
-    func updateTask(_ task: TaskModel)
+    func updateTask(_ task: TaskEntity)
 }
 
 protocol TaskInteractorOutput: AnyObject {
-    func didCreate(task: TaskModel)
-    func didUpdate(task: TaskModel)
+    func didCreate(task: TaskEntity)
+    func didUpdate(task: TaskEntity)
     
     func didFail(with error: TDError)
 }
@@ -57,7 +57,7 @@ class TaskInteractor: TaskInteractorInput {
     }
     
     
-    public func updateTask(_ task: TaskModel) {
+    public func updateTask(_ task: TaskEntity) {
         coreDataService.updateTask(task)
             .receive(on: DispatchQueue.global(qos: .background))
             .sink { [weak self] completion in

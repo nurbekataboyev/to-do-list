@@ -7,12 +7,12 @@
 
 import Foundation
 
-struct TaskEntity {
-    var id: String
-    var title: String
-    var description: String
+public struct TaskEntity: Hashable {
+    var id: String?
+    var title: String?
+    var description: String?
     var completed: Bool
-    var createdAt: Date
+    var createdAt: Date?
 }
 
 struct ServerTasks: Codable {

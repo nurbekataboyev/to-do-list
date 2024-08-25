@@ -17,7 +17,7 @@ class TaskInputView: UIView {
     public weak var delegate: TaskInputDelegate?
     
     private var type: TaskInputType
-    public var task: TaskModel? { didSet { updateText() } }
+    public var task: TaskEntity? { didSet { updateText() } }
     
     private var titleLabel = TDLabel(alignment: .center, style: .title3, weight: .semibold)
     private var textContainerView = UIView()
@@ -88,7 +88,7 @@ class TaskInputView: UIView {
         let text = (type == .title) ?
         task?.title
         :
-        task?.description_
+        task?.description
         textView.text = text
     }
     

@@ -9,14 +9,14 @@ import UIKit
 import SnapKit
 
 protocol TaskCellDelegate: AnyObject {
-    func updateStatus(for task: TaskModel)
+    func updateStatus(for task: TaskEntity)
 }
 
 class TaskCell: UITableViewCell {
     
     public weak var delegate: TaskCellDelegate?
     
-    private var task: TaskModel?
+    private var task: TaskEntity?
     
     private var textsStackView = UIStackView()
     private var titleLabel = TDLabel(style: .headline, weight: .semibold)
@@ -25,11 +25,11 @@ class TaskCell: UITableViewCell {
     private var statusContainerView = UIView()
     private var statusButton = TDButton(backgroundColor: .clear)
     
-    public func configure(with task: TaskModel) {
+    public func configure(with task: TaskEntity) {
         self.task = task
         
         titleLabel.text = task.title
-        descriptionLabel.text = task.description_
+        descriptionLabel.text = task.description
         dateLabel.text = task.createdAt?.toCustomFormat()
         updateStatusButton(isCompleted: task.completed)
         

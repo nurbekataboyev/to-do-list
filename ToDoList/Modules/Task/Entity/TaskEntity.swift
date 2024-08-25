@@ -9,7 +9,7 @@ import Foundation
 
 enum TaskViewMode: Equatable {
     case create
-    case edit(task: TaskModel)
+    case edit(task: TaskEntity)
 }
 
 enum TaskInputType: Equatable {
