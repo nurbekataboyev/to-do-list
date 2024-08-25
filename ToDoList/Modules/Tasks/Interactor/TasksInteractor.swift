@@ -11,13 +11,14 @@ import Combine
 protocol TasksInteractorInput {
     func fetchTasks()
     
-    func updateTask(_ task: Task)
-    func deleteTask(_ task: Task)
+    func updateTask(_ task: TaskModel)
+    func deleteTask(_ task: TaskModel)
 }
 
 protocol TasksInteractorOutput: AnyObject {
-    func didFetch(tasks: [Task])
-    func didUpdate(task: Task)
+    func didFetch(tasks: [TaskModel])
+    func didUpdate(task: TaskModel)
+    func didDelete(task: TaskModel)
     
     func didFail(with error: TDError)
 }
@@ -49,7 +50,7 @@ class TasksInteractor: TasksInteractorInput {
     }
     
     
-    public func updateTask(_ task: Task) {
+    public func updateTask(_ task: TaskModel) {
         coreDataService.updateTask(task)
             .receive(on: DispatchQueue.global(qos: .background))
             .sink { [weak self] completion in
@@ -57,9 +58,13 @@ class TasksInteractor: TasksInteractorInput {
                 
                 switch completion {
                 case .finished:
-                    output?.didUpdate(task: task)
+                    DispatchQueue.main.async {
+                        self.output?.didUpdate(task: task)
+                    }
                 case .failure(let error):
-                    output?.didFail(with: error)
+                    DispatchQueue.main.async {
+                        self.output?.didFail(with: error)
+                    }
                 }
                 
             } receiveValue: { _ in }
@@ -67,7 +72,7 @@ class TasksInteractor: TasksInteractorInput {
     }
     
     
-    public func deleteTask(_ task: Task) {
+    public func deleteTask(_ task: TaskModel) {
         coreDataService.deleteTask(task)
             .receive(on: DispatchQueue.global(qos: .background))
             .sink { [weak self] completion in
@@ -75,9 +80,13 @@ class TasksInteractor: TasksInteractorInput {
                 
                 switch completion {
                 case .finished:
-                    break
+                    DispatchQueue.main.async {
+                        self.output?.didDelete(task: task)
+                    }
                 case .failure(let error):
-                    output?.didFail(with: error)
+                    DispatchQueue.main.async {
+                        self.output?.didFail(with: error)
+                    }
                 }
                 
             } receiveValue: { _ in }
@@ -99,7 +108,9 @@ extension TasksInteractor {
                 case .finished:
                     break
                 case .failure(let error):
-                    output?.didFail(with: error)
+                    DispatchQueue.main.async {
+                        self.output?.didFail(with: error)
+                    }
                 }
                 
             } receiveValue: { [weak self] serverTasks in
@@ -125,19 +136,23 @@ extension TasksInteractor {
                 case .finished:
                     break
                 case .failure(let error):
-                    output?.didFail(with: error)
+                    DispatchQueue.main.async {
+                        self.output?.didFail(with: error)
+                    }
                 }
                 
             } receiveValue: { [weak self] tasks in
                 guard let self else { return }
-                output?.didFetch(tasks: tasks)
+                DispatchQueue.main.async {
+                    self.output?.didFetch(tasks: tasks)
+                }
             }
             .store(in: &cancellables)
     }
     
     
     private func saveServerTasksToLocal(_ serverTasks: ServerTasks, completionBlock: @escaping () -> ()) {
-        let tasks = serverTasks.tasks.map { $0.toTaskModel() }
+        let tasks = serverTasks.tasks.map { $0.toTaskEntity() }
         
         let dispatchGroup = DispatchGroup()
         
@@ -153,7 +168,9 @@ extension TasksInteractor {
                     case .finished:
                         dispatchGroup.leave()
                     case .failure(let error):
-                        output?.didFail(with: error)
+                        DispatchQueue.main.async {
+                            self.output?.didFail(with: error)
+                        }
                     }
                     
                 } receiveValue: { _ in }

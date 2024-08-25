@@ -5,33 +5,25 @@
 //  Created by Nurbek on 25/08/24.
 //
 
-import Foundation
+import UIKit
 import Combine
 import CoreData
 
 protocol CoreDataServiceProtocol {
     func saveContext() throws
     
-    func fetchTasks() -> AnyPublisher<[Task], TDError>
-    func saveTask(_ task: TaskModel) -> AnyPublisher<Void, TDError>
-    func updateTask(_ task: Task) -> AnyPublisher<Void, TDError>
-    func deleteTask(_ task: Task) -> AnyPublisher<Void, TDError>
+    func fetchTasks() -> AnyPublisher<[TaskModel], TDError>
+    func saveTask(_ task: TaskEntity) -> AnyPublisher<TaskModel, TDError>
+    func updateTask(_ task: TaskModel) -> AnyPublisher<Void, TDError>
+    func deleteTask(_ task: TaskModel) -> AnyPublisher<Void, TDError>
 }
 
 class CoreDataService: CoreDataServiceProtocol {
     
-    private let container: NSPersistentContainer
     private let context: NSManagedObjectContext
     
     init() {
-        container = NSPersistentContainer(name: "ToDoList")
-        container.loadPersistentStores { _, error in
-            if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        }
-        
-        context = container.viewContext
+        context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     }
     
     
@@ -46,13 +38,15 @@ class CoreDataService: CoreDataServiceProtocol {
     }
     
     
-    public func fetchTasks() -> AnyPublisher<[Task], TDError> {
+    public func fetchTasks() -> AnyPublisher<[TaskModel], TDError> {
         return Future { [weak self] promise in
             guard let self else { return }
             
             DispatchQueue.global(qos: .background).async {
                 self.context.perform {
-                    let fetchRequest = Task.fetchRequest()
+                    let fetchRequest = TaskModel.fetchRequest()
+                    let sortDescriptor = NSSortDescriptor(key: "createdAt", ascending: false)
+                    fetchRequest.sortDescriptors = [sortDescriptor]
                     
                     do {
                         let tasks = try self.context.fetch(fetchRequest)
@@ -72,18 +66,53 @@ class CoreDataService: CoreDataServiceProtocol {
     }
     
     
-    public func saveTask(_ task: TaskModel) -> AnyPublisher<Void, TDError> {
+    public func saveTask(_ taskEntity: TaskEntity) -> AnyPublisher<TaskModel, TDError> {
         return Future { [weak self] promise in
             guard let self else { return }
             
             DispatchQueue.global(qos: .background).async {
                 self.context.perform {
-                    let taskContext = Task(context: self.context)
-                    taskContext.id = task.id
-                    taskContext.title = task.title
-                    taskContext.description_ = task.description
-                    taskContext.completed = task.completed
-                    taskContext.createdAt = task.createdAt
+                    let task = TaskModel(context: self.context)
+                    task.id = taskEntity.id
+                    task.title = taskEntity.title
+                    task.description_ = taskEntity.description
+                    task.completed = taskEntity.completed
+                    task.createdAt = taskEntity.createdAt
+                    
+                    do {
+                        try self.saveContext()
+                        DispatchQueue.main.async {
+                            promise(.success((task)))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            promise(.failure(.somethingWentWrong))
+                        }
+                    }
+                }
+            }
+            
+        }
+        .eraseToAnyPublisher()
+    }
+    
+    
+    public func updateTask(_ task: TaskModel) -> AnyPublisher<Void, TDError> {
+        return Future { [weak self] promise in
+            guard let self else { return }
+            
+            DispatchQueue.global(qos: .background).async {
+                self.context.perform {
+                    guard let existingTask = self.context.object(with: task.objectID) as? TaskModel else {
+                        DispatchQueue.main.async {
+                            promise(.failure(.somethingWentWrong))
+                        }
+                        return
+                    }
+                    
+                    existingTask.title = task.title
+                    existingTask.description_ = task.description_
+                    existingTask.completed = task.completed
                     
                     do {
                         try self.saveContext()
@@ -103,31 +132,7 @@ class CoreDataService: CoreDataServiceProtocol {
     }
     
     
-    public func updateTask(_ task: Task) -> AnyPublisher<Void, TDError> {
-        return Future { [weak self] promise in
-            guard let self else { return }
-            
-            DispatchQueue.global(qos: .background).async {
-                self.context.perform {
-                    do {
-                        try self.saveContext()
-                        DispatchQueue.main.async {
-                            promise(.success(()))
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
-                        }
-                    }
-                }
-            }
-            
-        }
-        .eraseToAnyPublisher()
-    }
-    
-    
-    public func deleteTask(_ task: Task) -> AnyPublisher<Void, TDError> {
+    public func deleteTask(_ task: TaskModel) -> AnyPublisher<Void, TDError> {
         return Future { [weak self] promise in
             guard let self else { return }
             

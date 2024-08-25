@@ -10,7 +10,7 @@ import UIKit
 protocol TasksRouterProtocol {
     static func configureModule() -> UIViewController
     
-    func showTask(for mode: TaskViewMode)
+    func showTask(for mode: TaskViewMode, animated: Bool)
 }
 
 class TasksRouter: TasksRouterProtocol {
@@ -44,12 +44,15 @@ class TasksRouter: TasksRouterProtocol {
     }
     
     
-    public func showTask(for mode: TaskViewMode) {
-        let taskViewController = TaskRouter.configureModule(for: mode)
+    public func showTask(for mode: TaskViewMode, animated: Bool) {
+        let managementDelegate = (viewController as? TasksViewController)?.presenter
+        let taskViewController = TaskRouter.configureModule(
+            for: mode,
+            managementDelegate: managementDelegate as? TaskManagementDelegate)
         
         viewController?.present(
             UINavigationController(rootViewController: taskViewController),
-            animated: true)
+            animated: animated)
     }
     
 }
