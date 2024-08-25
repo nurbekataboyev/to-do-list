@@ -19,13 +19,13 @@ extension Task {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<Task> {
         return NSFetchRequest<Task>(entityName: "Task")
     }
-
+    
     @NSManaged public var id: String?
     @NSManaged public var title: String?
-    @NSManaged public var message: String?
-    @NSManaged public var createdAt: Date?
+    @NSManaged public var description_: String?
     @NSManaged public var completed: Bool
-
+    @NSManaged public var createdAt: Date?
+    
 }
 
 extension Task : Identifiable {

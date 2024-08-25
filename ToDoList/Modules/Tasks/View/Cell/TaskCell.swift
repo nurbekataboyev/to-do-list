@@ -8,18 +8,30 @@
 import UIKit
 import SnapKit
 
+protocol TaskCellDelegate: AnyObject {
+    func updateStatus(for task: Task)
+}
+
 class TaskCell: UITableViewCell {
+    
+    public weak var delegate: TaskCellDelegate?
+    
+    private var task: Task?
     
     private var textsStackView = UIStackView()
     private var titleLabel = TDLabel(style: .headline, weight: .semibold)
-    private var messageLabel = TDLabel(style: .subheadline, weight: .medium, color: .secondaryLabel)
+    private var descriptionLabel = TDLabel(style: .subheadline, weight: .medium, color: .secondaryLabel)
     private var dateLabel = TDLabel(style: .footnote, color: .secondaryLabel)
+    private var statusContainerView = UIView()
     private var statusButton = TDButton(backgroundColor: .clear)
     
     public func configure(with task: Task) {
+        self.task = task
+        
         titleLabel.text = task.title
-        messageLabel.text = task.message
+        descriptionLabel.text = task.description_
         dateLabel.text = task.createdAt?.toCustomFormat()
+        updateStatusButton(isCompleted: task.completed)
         
         layout()
     }
@@ -35,7 +47,7 @@ class TaskCell: UITableViewCell {
         super.prepareForReuse()
         
         titleLabel.text = nil
-        messageLabel.text = nil
+        descriptionLabel.text = nil
         dateLabel.text = nil
     }
     
@@ -44,21 +56,25 @@ class TaskCell: UITableViewCell {
         backgroundColor = .systemBackground
         selectionStyle = .none
         
-        addSubviews(textsStackView, statusButton)
+        contentView.addSubviews(textsStackView, statusContainerView)
         textsStackView.addArrangedSubview(titleLabel)
-        textsStackView.addArrangedSubview(messageLabel)
+        textsStackView.addArrangedSubview(descriptionLabel)
         textsStackView.addArrangedSubview(dateLabel)
+        statusContainerView.addSubview(statusButton)
         
         textsStackView.axis = .vertical
         textsStackView.spacing = 8
         
         titleLabel.numberOfLines = .max
         
-        messageLabel.numberOfLines = 2
+        descriptionLabel.numberOfLines = .max
+        
+        let statusGesture = UITapGestureRecognizer(target: self, action: #selector(statusButtonHandler))
+        statusContainerView.addGestureRecognizer(statusGesture)
         
         statusButton.layer.cornerRadius = Constants.CornerRadius.small
         statusButton.layer.borderColor = UIColor.systemGray3.cgColor
-        statusButton.layer.borderWidth = 1.5
+        statusButton.addTarget(self, action: #selector(statusButtonHandler), for: .touchUpInside)
     }
     
     
@@ -66,7 +82,7 @@ class TaskCell: UITableViewCell {
         textsStackView.snp.makeConstraints {
             $0.top.equalToSuperview().offset(Constants.Padding.medium)
             $0.leading.equalToSuperview().offset(Constants.Padding.large)
-            $0.trailing.equalTo(statusButton.snp.leading).offset(-Constants.Padding.medium)
+            $0.trailing.equalTo(statusContainerView.snp.leading)
             $0.bottom.equalToSuperview().offset(-Constants.Padding.medium)
         }
         
@@ -75,7 +91,7 @@ class TaskCell: UITableViewCell {
             $0.trailing.equalTo(textsStackView.snp.trailing)
         }
         
-        messageLabel.snp.makeConstraints {
+        descriptionLabel.snp.makeConstraints {
             $0.leading.equalTo(textsStackView.snp.leading)
             $0.trailing.equalTo(textsStackView.snp.trailing)
         }
@@ -85,21 +101,45 @@ class TaskCell: UITableViewCell {
             $0.trailing.equalTo(textsStackView.snp.trailing)
         }
         
+        statusContainerView.snp.makeConstraints {
+            $0.top.trailing.bottom.equalToSuperview()
+            $0.width.equalTo(85) // 35 button width, 50 for leading and trailing space
+        }
+        
         statusButton.snp.makeConstraints {
-            $0.centerY.equalToSuperview()
-            $0.trailing.equalToSuperview().offset(-22)
+            $0.center.equalTo(statusContainerView.snp.center)
             $0.size.equalTo(35)
         }
     }
     
     
-    override class var layerClass: AnyClass {
-        InsetsGroupedLayer.self
+    private func updateStatusButton(isCompleted completed: Bool) {
+        statusButton.backgroundColor = completed ? .appPrimary : .clear
+        statusButton.layer.borderWidth = completed ? 0 : 1.5
+        
+        let image = completed ?
+        UIImage(systemName: "checkmark")
+        :
+        nil
+        statusButton.setImage(image, for: .normal)
     }
     
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+}
+
+
+extension TaskCell {
+    
+    @objc func statusButtonHandler() {
+        if let task {
+            makeVibration()
+            updateStatusButton(isCompleted: !task.completed)
+            delegate?.updateStatus(for: task)
+        }
     }
     
 }
