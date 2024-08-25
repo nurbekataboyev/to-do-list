@@ -8,18 +8,83 @@
 import Foundation
 
 protocol TaskPresenterProtocol {
+    var viewMode: TaskViewMode { get set }
     
+    func createTask()
+    func updateTask()
+    func updateText(to text: String, for type: TaskInputType)
+}
+
+protocol TaskManagementDelegate: AnyObject {
+    func didCreateTask(_ task: TaskModel)
+    func didUpdateTask(_ task: TaskModel)
 }
 
 class TaskPresenter: TaskPresenterProtocol {
     
     public weak var view: TaskViewProtocol?
     private let interactor: TaskInteractorInput
+    private let router: TaskRouterProtocol
+    private weak var managementDelegate: TaskManagementDelegate?
+    
+    public var viewMode: TaskViewMode
+    private var task: TaskModel?
+    private var newTask: TaskEntity?
     
     init(view: TaskViewProtocol,
-         interactor: TaskInteractorInput) {
+         interactor: TaskInteractorInput,
+         router: TaskRouterProtocol,
+         viewMode: TaskViewMode,
+         managementDelegate: TaskManagementDelegate?) {
         self.view = view
         self.interactor = interactor
+        self.router = router
+        self.managementDelegate = managementDelegate
+        
+        self.viewMode = viewMode
+        
+        if case .edit(let task) = viewMode {
+            self.task = task
+        } else {
+            newTask = TaskEntity(
+                id: UUID().uuidString,
+                title: "",
+                description: "",
+                completed: false,
+                createdAt: Date())
+        }
+    }
+    
+    
+    public func createTask() {
+        if var newTask {
+            newTask.createdAt = Date()
+            interactor.createTask(newTask)
+        }
+    }
+    
+    
+    public func updateTask() {
+        if let task {
+            interactor.updateTask(task)
+        }
+    }
+    
+    
+    public func updateText(to text: String, for type: TaskInputType) {
+        let updatedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if viewMode == .create {
+            type == .title ?
+            (newTask?.title = updatedText)
+            :
+            (newTask?.description = updatedText)
+        } else {
+            type == .title ?
+            (task?.title = updatedText)
+            :
+            (task?.description_ = updatedText)
+        }
     }
     
 }
@@ -27,6 +92,20 @@ class TaskPresenter: TaskPresenterProtocol {
 
 extension TaskPresenter: TaskInteractorOutput {
     
+    func didCreate(task: TaskModel) {
+        managementDelegate?.didCreateTask(task)
+        router.close(animated: true)
+    }
     
+    
+    func didUpdate(task: TaskModel) {
+        managementDelegate?.didUpdateTask(task)
+        router.close(animated: true)
+    }
+    
+    
+    func didFail(with error: TDError) {
+        view?.displayError(error)
+    }
     
 }

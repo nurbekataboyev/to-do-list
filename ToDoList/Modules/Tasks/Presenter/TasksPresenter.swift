@@ -10,11 +10,11 @@ import Foundation
 protocol TasksPresenterProtocol {
     func viewDidLoad()
     
-    func updateStatus(for task: Task)
-    func deleteTask(_ task: Task)
+    func updateStatus(for task: TaskModel)
+    func deleteTask(_ task: TaskModel)
     
     func createTask()
-    func showDetails(for task: Task)
+    func showDetails(for task: TaskModel)
 }
 
 class TasksPresenter: TasksPresenterProtocol {
@@ -23,7 +23,7 @@ class TasksPresenter: TasksPresenterProtocol {
     private let interactor: TasksInteractorInput
     private let router: TasksRouterProtocol
     
-    private var tasks: [Task] = []
+    private var tasks: [TaskModel] = []
     
     init(view: TasksViewProtocol,
          interactor: TasksInteractorInput,
@@ -39,24 +39,63 @@ class TasksPresenter: TasksPresenterProtocol {
     }
     
     
-    public func updateStatus(for task: Task) {
+    public func updateStatus(for task: TaskModel) {
         task.completed.toggle()
         interactor.updateTask(task)
     }
     
     
-    public func deleteTask(_ task: Task) {
+    public func deleteTask(_ task: TaskModel) {
         interactor.deleteTask(task)
     }
     
     
     public func createTask() {
-        router.showTask(for: .create)
+        router.showTask(for: .create, animated: true)
     }
     
     
-    public func showDetails(for task: Task) {
-        router.showTask(for: .edit(task: task))
+    public func showDetails(for task: TaskModel) {
+        router.showTask(for: .edit(task: task), animated: true)
+    }
+    
+}
+
+
+extension TasksPresenter {
+    
+    private func handleCreatedTask(_ task: TaskModel) {
+        tasks.insert(task, at: 0)
+        view?.displayTasks(tasks)
+    }
+    
+    
+    private func handleUpdatedTask(_ task: TaskModel) {
+        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
+            tasks[index] = task
+        }
+        
+        view?.displayTasks(tasks)
+    }
+    
+    
+    private func handleDeletedTask(_ task: TaskModel) {
+        tasks.removeAll(where: { $0.id == task.id })
+        view?.displayTasks(tasks)
+    }
+    
+}
+
+
+extension TasksPresenter: TaskManagementDelegate {
+    
+    func didCreateTask(_ task: TaskModel) {
+        handleCreatedTask(task)
+    }
+    
+    
+    func didUpdateTask(_ task: TaskModel) {
+        handleUpdatedTask(task)
     }
     
 }
@@ -64,7 +103,7 @@ class TasksPresenter: TasksPresenterProtocol {
 
 extension TasksPresenter: TasksInteractorOutput {
     
-    func didFetch(tasks: [Task]) {
+    func didFetch(tasks: [TaskModel]) {
         self.tasks = tasks
         
         view?.displayTasks(tasks)
@@ -72,15 +111,20 @@ extension TasksPresenter: TasksInteractorOutput {
     }
     
     
-    func didUpdate(task: Task) {
-        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
-            tasks[index] = task
-        }
-        view?.displayTasks(tasks)
+    func didUpdate(task: TaskModel) {
+        handleUpdatedTask(task)
+    }
+    
+    
+    func didDelete(task: TaskModel) {
+        handleDeletedTask(task)
     }
     
     
     func didFail(with error: TDError) {
+        // when error happens it updates the view with existing tasks, all ui changes are back to old state
+        view?.displayTasks(tasks)
+        
         view?.displayError(error)
         view?.displayLoadingScreen(false)
     }

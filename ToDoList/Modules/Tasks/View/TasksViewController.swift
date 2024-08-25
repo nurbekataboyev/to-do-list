@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 
 protocol TasksViewProtocol: AnyObject {
-    func displayTasks(_ tasks: [Task])
+    func displayTasks(_ tasks: [TaskModel])
     
     func displayError(_ error: TDError)
     func displayLoadingScreen(_ display: Bool)
@@ -76,17 +76,17 @@ extension TasksViewController {
 
 extension TasksViewController: TasksTableViewDelegate {
     
-    func editTask(_ task: Task) {
+    func editTask(_ task: TaskModel) {
         presenter?.showDetails(for: task)
     }
     
     
-    func deleteTask(_ task: Task) {
+    func deleteTask(_ task: TaskModel) {
         presenter?.deleteTask(task)
     }
     
     
-    func updateStatus(_ task: Task) {
+    func updateStatus(_ task: TaskModel) {
         presenter?.updateStatus(for: task)
     }
     
@@ -95,7 +95,7 @@ extension TasksViewController: TasksTableViewDelegate {
 
 extension TasksViewController: TasksViewProtocol {
     
-    func displayTasks(_ tasks: [Task]) {
+    func displayTasks(_ tasks: [TaskModel]) {
         tableViewController.tasks = tasks
     }
     

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TaskModel {
+struct TaskEntity {
     var id: String
     var title: String
     var description: String
@@ -37,8 +37,8 @@ struct ServerTask: Codable {
 
 extension ServerTask {
     
-    public func toTaskModel() -> TaskModel {
-        let taskModel = TaskModel(
+    public func toTaskEntity() -> TaskEntity {
+        let taskModel = TaskEntity(
             id: String(id),
             title: todo,
             description: "Default Description Message",

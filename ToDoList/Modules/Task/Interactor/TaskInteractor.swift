@@ -6,13 +6,18 @@
 //
 
 import Foundation
+import Combine
 
 protocol TaskInteractorInput {
-    
+    func createTask(_ taskEntity: TaskEntity)
+    func updateTask(_ task: TaskModel)
 }
 
 protocol TaskInteractorOutput: AnyObject {
+    func didCreate(task: TaskModel)
+    func didUpdate(task: TaskModel)
     
+    func didFail(with error: TDError)
 }
 
 class TaskInteractor: TaskInteractorInput {
@@ -20,8 +25,57 @@ class TaskInteractor: TaskInteractorInput {
     public weak var output: TaskInteractorOutput?
     private let coreDataService: CoreDataServiceProtocol
     
+    private var cancellables = Set<AnyCancellable>()
+    
     init(coreDataService: CoreDataServiceProtocol) {
         self.coreDataService = coreDataService
+    }
+    
+    
+    public func createTask(_ taskEntity: TaskEntity) {
+        coreDataService.saveTask(taskEntity)
+            .receive(on: DispatchQueue.global(qos: .background))
+            .sink { [weak self] completion in
+                guard let self else { return }
+                
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.output?.didFail(with: error)
+                    }
+                }
+                
+            } receiveValue: { [weak self] task in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    self.output?.didCreate(task: task)
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    
+    public func updateTask(_ task: TaskModel) {
+        coreDataService.updateTask(task)
+            .receive(on: DispatchQueue.global(qos: .background))
+            .sink { [weak self] completion in
+                guard let self else { return }
+                
+                switch completion {
+                case .finished:
+                    DispatchQueue.main.async {
+                        self.output?.didUpdate(task: task)
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.output?.didFail(with: error)
+                    }
+                }
+                
+            } receiveValue: { _ in }
+            .store(in: &cancellables)
     }
     
 }

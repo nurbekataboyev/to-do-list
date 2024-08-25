@@ -8,9 +8,9 @@
 import UIKit
 
 protocol TasksTableViewDelegate: AnyObject {
-    func editTask(_ task: Task)
-    func deleteTask(_ task: Task)
-    func updateStatus(_ task: Task)
+    func editTask(_ task: TaskModel)
+    func deleteTask(_ task: TaskModel)
+    func updateStatus(_ task: TaskModel)
 }
 
 class TasksTableViewController: UITableViewController {
@@ -18,9 +18,9 @@ class TasksTableViewController: UITableViewController {
     public weak var delegate: TasksTableViewDelegate?
     
     enum Section: Hashable { case tasks }
-    private var dataSource: UITableViewDiffableDataSource<Section, Task>!
+    private var dataSource: UITableViewDiffableDataSource<Section, TaskModel>!
     
-    public var tasks: [Task] = [] { didSet { updateData() } }
+    public var tasks: [TaskModel] = [] { didSet { updateData() } }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,7 +43,7 @@ class TasksTableViewController: UITableViewController {
     
     
     private func configureDataSource() {
-        dataSource = UITableViewDiffableDataSource<Section, Task>(
+        dataSource = UITableViewDiffableDataSource<Section, TaskModel>(
             tableView: tableView, cellProvider: { tableView, indexPath, task in
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as? TaskCell else { return UITableViewCell() }
                 
@@ -56,7 +56,7 @@ class TasksTableViewController: UITableViewController {
     
     
     private func updateData() {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Task>()
+        var snapshot = NSDiffableDataSourceSnapshot<Section, TaskModel>()
         snapshot.appendSections([.tasks])
         snapshot.appendItems(tasks, toSection: .tasks)
         
@@ -109,7 +109,7 @@ extension TasksTableViewController {
 
 extension TasksTableViewController: TaskCellDelegate {
     
-    func updateStatus(for task: Task) {
+    func updateStatus(for task: TaskModel) {
         delegate?.updateStatus(task)
     }
     
