@@ -21,8 +21,7 @@ protocol CoreDataServiceProtocol {
 class CoreDataService: CoreDataServiceProtocol {
     
     private let container: NSPersistentContainer
-    private let mainContext: NSManagedObjectContext
-    private let backgroundContext: NSManagedObjectContext
+    private let context: NSManagedObjectContext
     
     init() {
         container = NSPersistentContainer(name: "ToDoList")
@@ -32,15 +31,14 @@ class CoreDataService: CoreDataServiceProtocol {
             }
         }
         
-        mainContext = container.viewContext
-        backgroundContext = container.newBackgroundContext()
+        context = container.viewContext
     }
     
     
     public func saveContext() throws {
-        if backgroundContext.hasChanges {
+        if context.hasChanges {
             do {
-                try backgroundContext.save()
+                try context.save()
             } catch {
                 throw TDError.somethingWentWrong
             }
@@ -52,17 +50,19 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            backgroundContext.perform {
-                let fetchRequest = Task.fetchRequest()
-                
-                do {
-                    let tasks = try self.backgroundContext.fetch(fetchRequest)
-                    DispatchQueue.main.async {
-                        promise(.success(tasks))
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        promise(.failure(.somethingWentWrong))
+            DispatchQueue.global(qos: .background).async {
+                self.context.perform {
+                    let fetchRequest = Task.fetchRequest()
+                    
+                    do {
+                        let tasks = try self.context.fetch(fetchRequest)
+                        DispatchQueue.main.async {
+                            promise(.success(tasks))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            promise(.failure(.somethingWentWrong))
+                        }
                     }
                 }
             }
@@ -76,22 +76,24 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            backgroundContext.perform {
-                let taskContext = Task(context: self.backgroundContext)
-                taskContext.id = task.id
-                taskContext.title = task.title
-                taskContext.message = task.message
-                taskContext.createdAt = task.createdAt
-                taskContext.completed = task.completed
-                
-                do {
-                    try self.saveContext()
-                    DispatchQueue.main.async {
-                        promise(.success(()))
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        promise(.failure(.somethingWentWrong))
+            DispatchQueue.global(qos: .background).async {
+                self.context.perform {
+                    let taskContext = Task(context: self.context)
+                    taskContext.id = task.id
+                    taskContext.title = task.title
+                    taskContext.description_ = task.description
+                    taskContext.completed = task.completed
+                    taskContext.createdAt = task.createdAt
+                    
+                    do {
+                        try self.saveContext()
+                        DispatchQueue.main.async {
+                            promise(.success(()))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            promise(.failure(.somethingWentWrong))
+                        }
                     }
                 }
             }
@@ -105,15 +107,17 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            backgroundContext.perform {
-                do {
-                    try self.saveContext()
-                    DispatchQueue.main.async {
-                        promise(.success(()))
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        promise(.failure(.somethingWentWrong))
+            DispatchQueue.global(qos: .background).async {
+                self.context.perform {
+                    do {
+                        try self.saveContext()
+                        DispatchQueue.main.async {
+                            promise(.success(()))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            promise(.failure(.somethingWentWrong))
+                        }
                     }
                 }
             }
@@ -127,17 +131,19 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            backgroundContext.perform {
-                self.backgroundContext.delete(task)
-                
-                do {
-                    try self.saveContext()
-                    DispatchQueue.main.async {
-                        promise(.success(()))
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        promise(.failure(.somethingWentWrong))
+            DispatchQueue.global(qos: .background).async {
+                self.context.perform {
+                    self.context.delete(task)
+                    
+                    do {
+                        try self.saveContext()
+                        DispatchQueue.main.async {
+                            promise(.success(()))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            promise(.failure(.somethingWentWrong))
+                        }
                     }
                 }
             }

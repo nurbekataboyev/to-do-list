@@ -13,12 +13,4 @@ extension UITableViewCell {
         return String(describing: self)
     }
     
-    
-    final class InsetsGroupedLayer: CALayer {
-        override var cornerRadius: CGFloat {
-            get { Constants.CornerRadius.medium }
-            set {}
-        }
-    }
-    
 }

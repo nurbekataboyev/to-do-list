@@ -10,10 +10,15 @@ import Combine
 
 protocol TasksInteractorInput {
     func fetchTasks()
+    
+    func updateTask(_ task: Task)
+    func deleteTask(_ task: Task)
 }
 
 protocol TasksInteractorOutput: AnyObject {
     func didFetch(tasks: [Task])
+    func didUpdate(task: Task)
+    
     func didFail(with error: TDError)
 }
 
@@ -41,6 +46,42 @@ class TasksInteractor: TasksInteractorInput {
         fetchLocalTasks()
         :
         fetchServerTasks()
+    }
+    
+    
+    public func updateTask(_ task: Task) {
+        coreDataService.updateTask(task)
+            .receive(on: DispatchQueue.global(qos: .background))
+            .sink { [weak self] completion in
+                guard let self else { return }
+                
+                switch completion {
+                case .finished:
+                    output?.didUpdate(task: task)
+                case .failure(let error):
+                    output?.didFail(with: error)
+                }
+                
+            } receiveValue: { _ in }
+            .store(in: &cancellables)
+    }
+    
+    
+    public func deleteTask(_ task: Task) {
+        coreDataService.deleteTask(task)
+            .receive(on: DispatchQueue.global(qos: .background))
+            .sink { [weak self] completion in
+                guard let self else { return }
+                
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    output?.didFail(with: error)
+                }
+                
+            } receiveValue: { _ in }
+            .store(in: &cancellables)
     }
     
 }

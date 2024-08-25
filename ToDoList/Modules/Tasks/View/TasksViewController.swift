@@ -10,8 +10,8 @@ import SnapKit
 
 protocol TasksViewProtocol: AnyObject {
     func displayTasks(_ tasks: [Task])
-    func displayError(_ error: TDError)
     
+    func displayError(_ error: TDError)
     func displayLoadingScreen(_ display: Bool)
 }
 
@@ -41,16 +41,19 @@ class TasksViewController: UIViewController {
         view.backgroundColor = .secondarySystemBackground
         navigationItem.title = "Список Задач"
         
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: nil)
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonHandler))
         navigationItem.rightBarButtonItem = addButton
         
         view.addSubview(tableViewController.tableView)
+        
+        tableViewController.delegate = self
     }
     
     
     private func layout() {
         tableViewController.tableView.snp.makeConstraints {
-            $0.edges.equalTo(view.safeAreaLayoutGuide.snp.edges)
+            $0.top.left.trailing.equalTo(view.safeAreaLayoutGuide)
+            $0.bottom.equalToSuperview()
         }
     }
     
@@ -60,6 +63,35 @@ class TasksViewController: UIViewController {
     }
     
 }
+
+
+extension TasksViewController {
+    
+    @objc func addButtonHandler() {
+        presenter?.createTask()
+    }
+    
+}
+
+
+extension TasksViewController: TasksTableViewDelegate {
+    
+    func editTask(_ task: Task) {
+        presenter?.showDetails(for: task)
+    }
+    
+    
+    func deleteTask(_ task: Task) {
+        presenter?.deleteTask(task)
+    }
+    
+    
+    func updateStatus(_ task: Task) {
+        presenter?.updateStatus(for: task)
+    }
+    
+}
+
 
 extension TasksViewController: TasksViewProtocol {
     

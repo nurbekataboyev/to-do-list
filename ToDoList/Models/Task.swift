@@ -10,9 +10,9 @@ import Foundation
 struct TaskModel {
     var id: String
     var title: String
-    var message: String
-    var createdAt: Date
+    var description: String
     var completed: Bool
+    var createdAt: Date
 }
 
 struct ServerTasks: Codable {
@@ -41,9 +41,9 @@ extension ServerTask {
         let taskModel = TaskModel(
             id: String(id),
             title: todo,
-            message: "Default Message",
-            createdAt: Date(),
-            completed: completed)
+            description: "Default Description Message",
+            completed: completed,
+            createdAt: Date())
         
         return taskModel
     }
