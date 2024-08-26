@@ -39,7 +39,7 @@ class TasksViewController: UIViewController {
     
     private func configureViews() {
         view.backgroundColor = .secondarySystemBackground
-        navigationItem.title = "Список Задач"
+        navigationItem.title = "My Tasks"
         
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonHandler))
         navigationItem.rightBarButtonItem = addButton
