@@ -20,7 +20,12 @@ class TasksTableViewController: UITableViewController {
     enum Section: Hashable { case tasks }
     private var dataSource: UITableViewDiffableDataSource<Section, TaskEntity>!
     
-    public var tasks: [TaskEntity] = [] { didSet { updateData() } }
+    public var tasks: [TaskEntity] = [] {
+        didSet {
+            let countHasChanged = oldValue.count != tasks.count
+            updateData(animation: countHasChanged)
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,14 +62,14 @@ class TasksTableViewController: UITableViewController {
     }
     
     
-    private func updateData() {
+    private func updateData(animation: Bool) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, TaskEntity>()
         snapshot.appendSections([.tasks])
         snapshot.appendItems(tasks, toSection: .tasks)
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            dataSource.apply(snapshot, animatingDifferences: true)
+            dataSource.apply(snapshot, animatingDifferences: animation)
         }
     }
     

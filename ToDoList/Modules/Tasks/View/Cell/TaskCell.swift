@@ -136,9 +136,11 @@ class TaskCell: UITableViewCell {
 extension TaskCell {
     
     @objc func statusButtonHandler() {
+        task?.completed.toggle()
+        makeVibration()
+        
         if let task {
-            makeVibration()
-            updateStatusButton(isCompleted: !task.completed)
+            updateStatusButton(isCompleted: task.completed)
             delegate?.updateStatus(for: task)
         }
     }

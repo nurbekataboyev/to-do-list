@@ -40,8 +40,6 @@ class TasksPresenter: TasksPresenterProtocol {
     
     
     public func updateStatus(for task: TaskEntity) {
-        var task = task
-        task.completed.toggle()
         interactor.updateTask(task)
     }
     
