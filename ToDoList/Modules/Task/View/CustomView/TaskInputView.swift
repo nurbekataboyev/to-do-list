@@ -17,7 +17,7 @@ class TaskInputView: UIView {
     public weak var delegate: TaskInputDelegate?
     
     private var type: TaskInputType
-    public var task: TaskModel? { didSet { updateText() } }
+    public var task: TaskEntity? { didSet { updateText() } }
     
     private var titleLabel = TDLabel(alignment: .center, style: .title3, weight: .semibold)
     private var textContainerView = UIView()
@@ -63,6 +63,7 @@ class TaskInputView: UIView {
         toolbar.items = [flexibleSpace, doneButton]
         toolbar.sizeToFit()
         textView.inputAccessoryView = toolbar
+        textView.isScrollEnabled = true
         textView.delegate = self
     }
     
@@ -75,11 +76,11 @@ class TaskInputView: UIView {
         textContainerView.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(12)
             $0.leading.trailing.bottom.equalToSuperview()
-            $0.height.equalTo(120)
         }
         
         textView.snp.makeConstraints {
             $0.edges.equalTo(textContainerView.snp.edges)
+            $0.height.equalTo(150)
         }
     }
     
@@ -88,8 +89,26 @@ class TaskInputView: UIView {
         let text = (type == .title) ?
         task?.title
         :
-        task?.description_
+        task?.description
         textView.text = text
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            updateTextViewContentSize()
+            textView.layoutIfNeeded()
+        }
+    }
+    
+    
+    private func updateTextViewContentSize() {
+        let fixedWidth = textView.frame.size.width
+        let newSize = textView.sizeThatFits(CGSize(
+            width: fixedWidth,
+            height: CGFloat.greatestFiniteMagnitude))
+        
+        textView.contentSize = CGSize(
+            width: fixedWidth,
+            height: max(newSize.height, textView.frame.size.height))
     }
     
     

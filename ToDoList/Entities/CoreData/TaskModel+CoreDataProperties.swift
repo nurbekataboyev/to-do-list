@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 
 @objc(TaskModel)
-public class TaskModel: NSManagedObject {
+public class TaskModel: NSManagedObject, Identifiable {
 
 }
 
@@ -28,6 +28,16 @@ extension TaskModel {
 
 }
 
-extension TaskModel : Identifiable {
-
+extension TaskModel {
+    
+    public func toTaskEntity() -> TaskEntity {
+        let task = TaskEntity(
+            id: id,
+            title: title,
+            description: description_,
+            completed: completed,
+            createdAt: createdAt)
+        return task
+    }
+    
 }

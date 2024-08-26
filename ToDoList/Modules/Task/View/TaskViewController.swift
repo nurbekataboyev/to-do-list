@@ -40,8 +40,11 @@ class TaskViewController: UIViewController {
         :
         "Редактировать"
         
+        let cancelButton = UIBarButtonItem(title: "Отменить", style: .plain, target: self, action: #selector(cancelButtonHandler))
         let saveButton = UIBarButtonItem(title: "Сохранить", style: .done, target: self, action: #selector(saveButtonHandler))
         let doneButton = UIBarButtonItem(title: "Готово", style: .done, target: self, action: #selector(doneButtonHandler))
+        
+        navigationItem.leftBarButtonItem = cancelButton
         navigationItem.rightBarButtonItem = (presenter?.viewMode == .create) ?
         saveButton
         :
@@ -94,6 +97,11 @@ class TaskViewController: UIViewController {
 
 
 extension TaskViewController {
+    
+    @objc func cancelButtonHandler() {
+        presenter?.close()
+    }
+    
     
     @objc func saveButtonHandler() {
         presenter?.createTask()

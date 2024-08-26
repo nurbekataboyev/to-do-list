@@ -10,11 +10,11 @@ import Foundation
 protocol TasksPresenterProtocol {
     func viewDidLoad()
     
-    func updateStatus(for task: TaskModel)
-    func deleteTask(_ task: TaskModel)
+    func updateStatus(for task: TaskEntity)
+    func deleteTask(_ task: TaskEntity)
     
     func createTask()
-    func showDetails(for task: TaskModel)
+    func showDetails(for task: TaskEntity)
 }
 
 class TasksPresenter: TasksPresenterProtocol {
@@ -23,7 +23,7 @@ class TasksPresenter: TasksPresenterProtocol {
     private let interactor: TasksInteractorInput
     private let router: TasksRouterProtocol
     
-    private var tasks: [TaskModel] = []
+    private var tasks: [TaskEntity] = []
     
     init(view: TasksViewProtocol,
          interactor: TasksInteractorInput,
@@ -39,13 +39,14 @@ class TasksPresenter: TasksPresenterProtocol {
     }
     
     
-    public func updateStatus(for task: TaskModel) {
+    public func updateStatus(for task: TaskEntity) {
+        var task = task
         task.completed.toggle()
         interactor.updateTask(task)
     }
     
     
-    public func deleteTask(_ task: TaskModel) {
+    public func deleteTask(_ task: TaskEntity) {
         interactor.deleteTask(task)
     }
     
@@ -55,7 +56,7 @@ class TasksPresenter: TasksPresenterProtocol {
     }
     
     
-    public func showDetails(for task: TaskModel) {
+    public func showDetails(for task: TaskEntity) {
         router.showTask(for: .edit(task: task), animated: true)
     }
     
@@ -64,13 +65,13 @@ class TasksPresenter: TasksPresenterProtocol {
 
 extension TasksPresenter {
     
-    private func handleCreatedTask(_ task: TaskModel) {
+    private func handleCreatedTask(_ task: TaskEntity) {
         tasks.insert(task, at: 0)
         view?.displayTasks(tasks)
     }
     
     
-    private func handleUpdatedTask(_ task: TaskModel) {
+    private func handleUpdatedTask(_ task: TaskEntity) {
         if let index = tasks.firstIndex(where: { $0.id == task.id }) {
             tasks[index] = task
         }
@@ -79,7 +80,7 @@ extension TasksPresenter {
     }
     
     
-    private func handleDeletedTask(_ task: TaskModel) {
+    private func handleDeletedTask(_ task: TaskEntity) {
         tasks.removeAll(where: { $0.id == task.id })
         view?.displayTasks(tasks)
     }
@@ -89,12 +90,12 @@ extension TasksPresenter {
 
 extension TasksPresenter: TaskManagementDelegate {
     
-    func didCreateTask(_ task: TaskModel) {
+    func didCreateTask(_ task: TaskEntity) {
         handleCreatedTask(task)
     }
     
     
-    func didUpdateTask(_ task: TaskModel) {
+    func didUpdateTask(_ task: TaskEntity) {
         handleUpdatedTask(task)
     }
     
@@ -103,7 +104,7 @@ extension TasksPresenter: TaskManagementDelegate {
 
 extension TasksPresenter: TasksInteractorOutput {
     
-    func didFetch(tasks: [TaskModel]) {
+    func didFetch(tasks: [TaskEntity]) {
         self.tasks = tasks
         
         view?.displayTasks(tasks)
@@ -111,12 +112,12 @@ extension TasksPresenter: TasksInteractorOutput {
     }
     
     
-    func didUpdate(task: TaskModel) {
+    func didUpdate(task: TaskEntity) {
         handleUpdatedTask(task)
     }
     
     
-    func didDelete(task: TaskModel) {
+    func didDelete(task: TaskEntity) {
         handleDeletedTask(task)
     }
     

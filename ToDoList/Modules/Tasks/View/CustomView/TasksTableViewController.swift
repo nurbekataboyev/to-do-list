@@ -8,9 +8,9 @@
 import UIKit
 
 protocol TasksTableViewDelegate: AnyObject {
-    func editTask(_ task: TaskModel)
-    func deleteTask(_ task: TaskModel)
-    func updateStatus(_ task: TaskModel)
+    func editTask(_ task: TaskEntity)
+    func deleteTask(_ task: TaskEntity)
+    func updateStatus(_ task: TaskEntity)
 }
 
 class TasksTableViewController: UITableViewController {
@@ -18,9 +18,9 @@ class TasksTableViewController: UITableViewController {
     public weak var delegate: TasksTableViewDelegate?
     
     enum Section: Hashable { case tasks }
-    private var dataSource: UITableViewDiffableDataSource<Section, TaskModel>!
+    private var dataSource: UITableViewDiffableDataSource<Section, TaskEntity>!
     
-    public var tasks: [TaskModel] = [] { didSet { updateData() } }
+    public var tasks: [TaskEntity] = [] { didSet { updateData() } }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,7 +43,7 @@ class TasksTableViewController: UITableViewController {
     
     
     private func configureDataSource() {
-        dataSource = UITableViewDiffableDataSource<Section, TaskModel>(
+        dataSource = UITableViewDiffableDataSource<Section, TaskEntity>(
             tableView: tableView, cellProvider: { tableView, indexPath, task in
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as? TaskCell else { return UITableViewCell() }
                 
@@ -52,11 +52,13 @@ class TasksTableViewController: UITableViewController {
                 
                 return cell
             })
+        
+        dataSource.defaultRowAnimation = .fade
     }
     
     
     private func updateData() {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, TaskModel>()
+        var snapshot = NSDiffableDataSourceSnapshot<Section, TaskEntity>()
         snapshot.appendSections([.tasks])
         snapshot.appendItems(tasks, toSection: .tasks)
         
@@ -109,7 +111,7 @@ extension TasksTableViewController {
 
 extension TasksTableViewController: TaskCellDelegate {
     
-    func updateStatus(for task: TaskModel) {
+    func updateStatus(for task: TaskEntity) {
         delegate?.updateStatus(task)
     }
     

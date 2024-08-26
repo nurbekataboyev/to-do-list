@@ -13,11 +13,13 @@ protocol TaskPresenterProtocol {
     func createTask()
     func updateTask()
     func updateText(to text: String, for type: TaskInputType)
+    
+    func close()
 }
 
 protocol TaskManagementDelegate: AnyObject {
-    func didCreateTask(_ task: TaskModel)
-    func didUpdateTask(_ task: TaskModel)
+    func didCreateTask(_ task: TaskEntity)
+    func didUpdateTask(_ task: TaskEntity)
 }
 
 class TaskPresenter: TaskPresenterProtocol {
@@ -28,7 +30,7 @@ class TaskPresenter: TaskPresenterProtocol {
     private weak var managementDelegate: TaskManagementDelegate?
     
     public var viewMode: TaskViewMode
-    private var task: TaskModel?
+    private var task: TaskEntity?
     private var newTask: TaskEntity?
     
     init(view: TaskViewProtocol,
@@ -57,8 +59,7 @@ class TaskPresenter: TaskPresenterProtocol {
     
     
     public func createTask() {
-        if var newTask {
-            newTask.createdAt = Date()
+        if let newTask {
             interactor.createTask(newTask)
         }
     }
@@ -83,8 +84,13 @@ class TaskPresenter: TaskPresenterProtocol {
             type == .title ?
             (task?.title = updatedText)
             :
-            (task?.description_ = updatedText)
+            (task?.description = updatedText)
         }
+    }
+    
+    
+    public func close() {
+        router.close(animated: true)
     }
     
 }
@@ -92,13 +98,13 @@ class TaskPresenter: TaskPresenterProtocol {
 
 extension TaskPresenter: TaskInteractorOutput {
     
-    func didCreate(task: TaskModel) {
+    func didCreate(task: TaskEntity) {
         managementDelegate?.didCreateTask(task)
         router.close(animated: true)
     }
     
     
-    func didUpdate(task: TaskModel) {
+    func didUpdate(task: TaskEntity) {
         managementDelegate?.didUpdateTask(task)
         router.close(animated: true)
     }

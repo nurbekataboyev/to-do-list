@@ -115,7 +115,7 @@
 				1F651AB82C794D84002D9993 /* Application */,
 				1F651AB92C794D8E002D9993 /* Services */,
 				1F651AC02C794DE5002D9993 /* Managers */,
-				1F651ABA2C794D97002D9993 /* Models */,
+				1F651ABA2C794D97002D9993 /* Entities */,
 				1F651ABB2C794D9A002D9993 /* Modules */,
 				1F651ABC2C794DA4002D9993 /* CustomViews */,
 				1F651ABD2C794DAD002D9993 /* Extensions */,
@@ -144,13 +144,13 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		1F651ABA2C794D97002D9993 /* Models */ = {
+		1F651ABA2C794D97002D9993 /* Entities */ = {
 			isa = PBXGroup;
 			children = (
 				1F651AD12C7A2F87002D9993 /* CoreData */,
 				1F651AEC2C7A6D9C002D9993 /* Task.swift */,
 			);
-			path = Models;
+			path = Entities;
 			sourceTree = "<group>";
 		};
 		1F651ABB2C794D9A002D9993 /* Modules */ = {
