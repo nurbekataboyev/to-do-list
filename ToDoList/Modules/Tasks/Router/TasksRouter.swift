@@ -15,7 +15,7 @@ protocol TasksRouterProtocol {
 
 class TasksRouter: TasksRouterProtocol {
     
-    public weak var viewController: UIViewController?
+    private weak var viewController: UIViewController?
     
     static func configureModule() -> UIViewController {
         let loadingScreenManager = LoadingScreenManager()

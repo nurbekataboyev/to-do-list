@@ -13,6 +13,7 @@ protocol CoreDataServiceProtocol {
     func saveContext() throws
     
     func fetchTasks() -> AnyPublisher<[TaskEntity], TDError>
+    func fetchTask(_ task: TaskEntity) -> AnyPublisher<TaskEntity?, TDError>
     func saveTask(_ task: TaskEntity) -> AnyPublisher<TaskEntity, TDError>
     func updateTask(_ task: TaskEntity) -> AnyPublisher<Void, TDError>
     func deleteTask(_ task: TaskEntity) -> AnyPublisher<Void, TDError>
@@ -23,8 +24,13 @@ class CoreDataService: CoreDataServiceProtocol {
     private let persistentContainer: NSPersistentContainer
     private let backgroundContext: NSManagedObjectContext
     
-    init() {
-        persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+    init(persistentContainer container: NSPersistentContainer? = nil) {
+        if let container {
+            persistentContainer = container
+        } else {
+            persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+        }
+        
         backgroundContext = persistentContainer.newBackgroundContext()
         backgroundContext.automaticallyMergesChangesFromParent = true
     }
@@ -67,13 +73,41 @@ class CoreDataService: CoreDataServiceProtocol {
     }
     
     
+    public func fetchTask(_ task: TaskEntity) -> AnyPublisher<TaskEntity?, TDError> {
+        return Future { [weak self] promise in
+            guard let self else { return }
+            
+            backgroundContext.perform {
+                let fetchRequest = TaskModel.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "id == %@", task.id ?? "" as CVarArg)
+                fetchRequest.fetchLimit = 1
+                
+                do {
+                    guard let task = try self.backgroundContext.fetch(fetchRequest).first else {
+                        promise(.success(nil))
+                        return
+                    }
+                    
+                    promise(.success(task.toTaskEntity()))
+                    
+                } catch {
+                    promise(.failure(.somethingWentWrong))
+                }
+            }
+            
+        }
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
+    
+    
     public func saveTask(_ taskEntity: TaskEntity) -> AnyPublisher<TaskEntity, TDError> {
         return Future { [weak self] promise in
             guard let self else { return }
             
             backgroundContext.perform {
                 let task = TaskModel(context: self.backgroundContext)
-                task.id = taskEntity.id
+                task.id = UUID().uuidString
                 task.title = taskEntity.title
                 task.description_ = taskEntity.description
                 task.completed = taskEntity.completed

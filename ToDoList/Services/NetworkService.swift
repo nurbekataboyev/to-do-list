@@ -24,7 +24,7 @@ class NetworkService: NetworkServiceProtocol {
             DispatchQueue.global(qos: .background).async {
                 guard let url = URL(string: self.baseURL + self.endpoint) else {
                     DispatchQueue.main.async {
-                        promise(.failure(.somethingWentWrong))
+                        promise(.failure(.invalidURL))
                     }
                     return
                 }
@@ -36,7 +36,7 @@ class NetworkService: NetworkServiceProtocol {
                           let response = response as? HTTPURLResponse, response.statusCode == 200,
                           let data else {
                         DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
+                            promise(.failure(.invalidResponse))
                         }
                         return
                     }

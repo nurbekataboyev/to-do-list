@@ -15,7 +15,7 @@ protocol TaskRouterProtocol {
 
 class TaskRouter: TaskRouterProtocol {
     
-    public weak var viewController: UIViewController?
+    private weak var viewController: UIViewController?
     
     static func configureModule(for mode: TaskViewMode, managementDelegate: TaskManagementDelegate?) -> UIViewController {
         let view = TaskViewController()

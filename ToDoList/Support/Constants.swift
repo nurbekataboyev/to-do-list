@@ -37,5 +37,7 @@ enum UserDefaultsKeys: String {
 
 
 enum TDError: String, Error {
-    case somethingWentWrong = "Couldn't complete your request. Please try again later!"
+    case invalidURL = "We're having trouble connecting. Please try again."
+    case invalidResponse = "We couldn't process your request. Please try again."
+    case somethingWentWrong = "Oops, something went wrong. Please try again later."
 }

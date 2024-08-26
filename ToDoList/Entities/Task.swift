@@ -15,7 +15,7 @@ public struct TaskEntity: Hashable {
     var createdAt: Date?
 }
 
-struct ServerTasks: Codable {
+struct ServerTasks: Codable, Equatable {
     var tasks: [ServerTask]
     
     enum CodingKeys: String, CodingKey {
@@ -23,7 +23,7 @@ struct ServerTasks: Codable {
     }
 }
 
-struct ServerTask: Codable {
+struct ServerTask: Codable, Equatable {
     var id: Int
     var todo: String
     var completed: Bool
