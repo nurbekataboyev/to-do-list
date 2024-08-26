@@ -49,11 +49,9 @@ class TaskPresenter: TaskPresenterProtocol {
             self.task = task
         } else {
             newTask = TaskEntity(
-                id: UUID().uuidString,
                 title: "",
                 description: "",
-                completed: false,
-                createdAt: Date())
+                completed: false)
         }
     }
     
