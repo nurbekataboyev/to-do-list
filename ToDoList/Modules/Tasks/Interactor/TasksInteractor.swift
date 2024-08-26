@@ -142,11 +142,8 @@ extension TasksInteractor {
                 
             } receiveValue: { [weak self] tasks in
                 guard let self else { return }
-                
-                let taskEntities = tasks.map { $0.toTaskEntity() }
-                
                 DispatchQueue.main.async {
-                    self.output?.didFetch(tasks: taskEntities)
+                    self.output?.didFetch(tasks: tasks)
                 }
                 
             }

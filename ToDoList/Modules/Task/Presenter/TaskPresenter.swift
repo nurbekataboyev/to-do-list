@@ -13,6 +13,8 @@ protocol TaskPresenterProtocol {
     func createTask()
     func updateTask()
     func updateText(to text: String, for type: TaskInputType)
+    
+    func close()
 }
 
 protocol TaskManagementDelegate: AnyObject {
@@ -84,6 +86,11 @@ class TaskPresenter: TaskPresenterProtocol {
             :
             (task?.description = updatedText)
         }
+    }
+    
+    
+    public func close() {
+        router.close(animated: true)
     }
     
 }

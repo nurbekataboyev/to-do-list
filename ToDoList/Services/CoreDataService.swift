@@ -12,7 +12,7 @@ import CoreData
 protocol CoreDataServiceProtocol {
     func saveContext() throws
     
-    func fetchTasks() -> AnyPublisher<[TaskModel], TDError>
+    func fetchTasks() -> AnyPublisher<[TaskEntity], TDError>
     func saveTask(_ task: TaskEntity) -> AnyPublisher<TaskEntity, TDError>
     func updateTask(_ task: TaskEntity) -> AnyPublisher<Void, TDError>
     func deleteTask(_ task: TaskEntity) -> AnyPublisher<Void, TDError>
@@ -20,17 +20,20 @@ protocol CoreDataServiceProtocol {
 
 class CoreDataService: CoreDataServiceProtocol {
     
-    private let context: NSManagedObjectContext
+    private let persistentContainer: NSPersistentContainer
+    private let backgroundContext: NSManagedObjectContext
     
     init() {
-        context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+        backgroundContext = persistentContainer.newBackgroundContext()
+        backgroundContext.automaticallyMergesChangesFromParent = true
     }
     
     
     public func saveContext() throws {
-        if context.hasChanges {
+        if backgroundContext.hasChanges {
             do {
-                try context.save()
+                try backgroundContext.save()
             } catch {
                 throw TDError.somethingWentWrong
             }
@@ -38,30 +41,28 @@ class CoreDataService: CoreDataServiceProtocol {
     }
     
     
-    public func fetchTasks() -> AnyPublisher<[TaskModel], TDError> {
+    public func fetchTasks() -> AnyPublisher<[TaskEntity], TDError> {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            DispatchQueue.global(qos: .background).async {
-                self.context.perform {
-                    let fetchRequest = TaskModel.fetchRequest()
-                    let sortDescriptor = NSSortDescriptor(key: "createdAt", ascending: false)
-                    fetchRequest.sortDescriptors = [sortDescriptor]
+            backgroundContext.perform {
+                let fetchRequest = TaskModel.fetchRequest()
+                let sortDescriptor = NSSortDescriptor(key: "createdAt", ascending: false)
+                fetchRequest.sortDescriptors = [sortDescriptor]
+                
+                do {
+                    let tasks = try self.backgroundContext.fetch(fetchRequest)
+                    let taskEntities = tasks.map { $0.toTaskEntity() }
                     
-                    do {
-                        let tasks = try self.context.fetch(fetchRequest)
-                        DispatchQueue.main.async {
-                            promise(.success(tasks))
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
-                        }
-                    }
+                    promise(.success(taskEntities))
+                    
+                } catch {
+                    promise(.failure(.somethingWentWrong))
                 }
             }
             
         }
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
     
@@ -70,29 +71,24 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            DispatchQueue.global(qos: .background).async {
-                self.context.perform {
-                    let task = TaskModel(context: self.context)
-                    task.id = taskEntity.id
-                    task.title = taskEntity.title
-                    task.description_ = taskEntity.description
-                    task.completed = taskEntity.completed
-                    task.createdAt = Date()
-                    
-                    do {
-                        try self.saveContext()
-                        DispatchQueue.main.async {
-                            promise(.success((task.toTaskEntity())))
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
-                        }
-                    }
+            backgroundContext.perform {
+                let task = TaskModel(context: self.backgroundContext)
+                task.id = taskEntity.id
+                task.title = taskEntity.title
+                task.description_ = taskEntity.description
+                task.completed = taskEntity.completed
+                task.createdAt = Date()
+                
+                do {
+                    try self.saveContext()
+                    promise(.success((task.toTaskEntity())))
+                } catch {
+                    promise(.failure(.somethingWentWrong))
                 }
             }
             
         }
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
     
@@ -101,39 +97,31 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            DispatchQueue.global(qos: .background).async {
-                self.context.perform {
-                    let fetchRequest: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", task.id ?? "" as CVarArg)
-                    fetchRequest.fetchLimit = 1
-                    
-                    do {
-                        guard let existingTask = try self.context.fetch(fetchRequest).first else {
-                            DispatchQueue.main.async {
-                                promise(.failure(.somethingWentWrong))
-                            }
-                            return
-                        }
-                        
-                        existingTask.title = task.title
-                        existingTask.description_ = task.description
-                        existingTask.completed = task.completed
-                        
-                        try self.saveContext()
-                        
-                        DispatchQueue.main.async {
-                            promise(.success(()))
-                        }
-                        
-                    } catch {
-                        DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
-                        }
+            backgroundContext.perform {
+                let fetchRequest: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "id == %@", task.id ?? "" as CVarArg)
+                fetchRequest.fetchLimit = 1
+                
+                do {
+                    guard let existingTask = try self.backgroundContext.fetch(fetchRequest).first else {
+                        promise(.failure(.somethingWentWrong))
+                        return
                     }
+                    
+                    existingTask.title = task.title
+                    existingTask.description_ = task.description
+                    existingTask.completed = task.completed
+                    
+                    try self.saveContext()
+                    promise(.success(()))
+                    
+                } catch {
+                    promise(.failure(.somethingWentWrong))
                 }
             }
             
         }
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
     
@@ -142,36 +130,29 @@ class CoreDataService: CoreDataServiceProtocol {
         return Future { [weak self] promise in
             guard let self else { return }
             
-            DispatchQueue.global(qos: .background).async {
-                self.context.perform {
-                    let fetchRequest: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
-                    fetchRequest.predicate = NSPredicate(format: "id == %@", task.id ?? "" as CVarArg)
-                    fetchRequest.fetchLimit = 1
-                    
-                    do {
-                        guard let existingTask = try self.context.fetch(fetchRequest).first else {
-                            DispatchQueue.main.async {
-                                promise(.failure(.somethingWentWrong))
-                            }
-                            return
-                        }
-                        
-                        self.context.delete(existingTask)
-                        try self.saveContext()
-                        
-                        DispatchQueue.main.async {
-                            promise(.success(()))
-                        }
-                        
-                    } catch {
-                        DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
-                        }
+            backgroundContext.perform {
+                let fetchRequest: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "id == %@", task.id ?? "" as CVarArg)
+                fetchRequest.fetchLimit = 1
+                
+                do {
+                    guard let existingTask = try self.backgroundContext.fetch(fetchRequest).first else {
+                        promise(.failure(.somethingWentWrong))
+                        return
                     }
+                    
+                    self.backgroundContext.delete(existingTask)
+                    try self.saveContext()
+                    
+                    promise(.success(()))
+                    
+                } catch {
+                    promise(.failure(.somethingWentWrong))
                 }
             }
             
         }
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
     
