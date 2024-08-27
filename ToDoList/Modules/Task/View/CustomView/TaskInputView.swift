@@ -27,9 +27,9 @@ class TaskInputView: UIView {
         self.type = type
         
         let placeholder = (type == .title) ?
-        "Напишите здесь название..."
+        "Write here title..."
         :
-        "Напишите здесь описание..."
+        "Write here description..."
         
         let style = (type == .title) ?
         UIFont.TextStyle.headline
@@ -50,9 +50,9 @@ class TaskInputView: UIView {
         textContainerView.addSubview(textView)
         
         let title = (type == .title) ?
-        "Название"
+        "Title"
         :
-        "Описание"
+        "Description"
         titleLabel.text = title
         
         textContainerView.addShadow()

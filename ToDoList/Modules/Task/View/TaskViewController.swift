@@ -36,13 +36,13 @@ class TaskViewController: UIViewController {
     private func configureViews() {
         view.backgroundColor = .secondarySystemBackground
         navigationItem.title = (presenter?.viewMode == .create) ?
-        "Новая задача"
+        "Add Task"
         :
-        "Редактировать"
+        "Edit Task"
         
-        let cancelButton = UIBarButtonItem(title: "Отменить", style: .plain, target: self, action: #selector(cancelButtonHandler))
-        let saveButton = UIBarButtonItem(title: "Сохранить", style: .done, target: self, action: #selector(saveButtonHandler))
-        let doneButton = UIBarButtonItem(title: "Готово", style: .done, target: self, action: #selector(doneButtonHandler))
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonHandler))
+        let saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(saveButtonHandler))
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonHandler))
         
         navigationItem.leftBarButtonItem = cancelButton
         navigationItem.rightBarButtonItem = (presenter?.viewMode == .create) ?
