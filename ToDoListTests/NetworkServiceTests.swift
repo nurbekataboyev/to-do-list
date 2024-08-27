@@ -52,6 +52,8 @@ final class NetworkServiceTests: XCTestCase {
             }
             .store(in: &cancellables)
         
+        // fails when internet is slow or no internet because fetch is not completed
+        // as timeout is 50 seconds
         waitForExpectations(timeout: 50)
     }
     

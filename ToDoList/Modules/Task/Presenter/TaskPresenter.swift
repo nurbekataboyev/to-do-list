@@ -30,8 +30,8 @@ class TaskPresenter: TaskPresenterProtocol {
     private weak var managementDelegate: TaskManagementDelegate?
     
     public var viewMode: TaskViewMode
-    private var task: TaskEntity?
-    private var newTask: TaskEntity?
+    private(set) var task: TaskEntity?
+    private(set) var newTask: TaskEntity?
     
     init(view: TaskViewProtocol,
          interactor: TaskInteractorInput,
