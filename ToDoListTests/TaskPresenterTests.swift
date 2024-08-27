@@ -110,8 +110,8 @@ final class TaskPresenterTests: XCTestCase {
         presenter.createTask()
         
         // assert
-        XCTAssertEqual(presenter.newTask?.title, newTitle, "Task titles should be equal")
-        XCTAssertEqual(presenter.newTask?.description, newDescription, "Task descriptions should be equal")
+        XCTAssertEqual(presenter.task?.title, newTitle, "Task titles should be equal")
+        XCTAssertEqual(presenter.task?.description, newDescription, "Task descriptions should be equal")
     }
     
     

@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 protocol TaskInteractorInput {
-    func createTask(_ taskEntity: TaskEntity)
+    func createTask(_ task: TaskEntity)
     func updateTask(_ task: TaskEntity)
 }
 
@@ -32,8 +32,8 @@ class TaskInteractor: TaskInteractorInput {
     }
     
     
-    public func createTask(_ taskEntity: TaskEntity) {
-        coreDataService.saveTask(taskEntity)
+    public func createTask(_ task: TaskEntity) {
+        coreDataService.saveTask(task)
             .receive(on: DispatchQueue.global(qos: .background))
             .sink { [weak self] completion in
                 guard let self else { return }

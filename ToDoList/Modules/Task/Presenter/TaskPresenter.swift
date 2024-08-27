@@ -31,7 +31,6 @@ class TaskPresenter: TaskPresenterProtocol {
     
     public var viewMode: TaskViewMode
     private(set) var task: TaskEntity?
-    private(set) var newTask: TaskEntity?
     
     init(view: TaskViewProtocol,
          interactor: TaskInteractorInput,
@@ -48,7 +47,7 @@ class TaskPresenter: TaskPresenterProtocol {
         if case .edit(let task) = viewMode {
             self.task = task
         } else {
-            newTask = TaskEntity(
+            task = TaskEntity(
                 title: "",
                 description: "",
                 completed: false)
@@ -57,8 +56,8 @@ class TaskPresenter: TaskPresenterProtocol {
     
     
     public func createTask() {
-        if let newTask {
-            interactor.createTask(newTask)
+        if let task {
+            interactor.createTask(task)
         }
     }
     
@@ -73,17 +72,10 @@ class TaskPresenter: TaskPresenterProtocol {
     public func updateText(to text: String, for type: TaskInputType) {
         let updatedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        if viewMode == .create {
-            type == .title ?
-            (newTask?.title = updatedText)
-            :
-            (newTask?.description = updatedText)
-        } else {
-            type == .title ?
-            (task?.title = updatedText)
-            :
-            (task?.description = updatedText)
-        }
+        type == .title ?
+        (task?.title = updatedText)
+        :
+        (task?.description = updatedText)
     }
     
     
