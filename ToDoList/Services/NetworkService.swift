@@ -23,9 +23,7 @@ class NetworkService: NetworkServiceProtocol {
             
             DispatchQueue.global(qos: .background).async {
                 guard let url = URL(string: self.baseURL + self.endpoint) else {
-                    DispatchQueue.main.async {
-                        promise(.failure(.invalidURL))
-                    }
+                    promise(.failure(.invalidURL))
                     return
                 }
                 
@@ -35,9 +33,7 @@ class NetworkService: NetworkServiceProtocol {
                     guard error == nil,
                           let response = response as? HTTPURLResponse, response.statusCode == 200,
                           let data else {
-                        DispatchQueue.main.async {
-                            promise(.failure(.invalidResponse))
-                        }
+                        promise(.failure(.invalidResponse))
                         return
                     }
                     
@@ -45,20 +41,17 @@ class NetworkService: NetworkServiceProtocol {
                         let decoder = JSONDecoder()
                         let tasks = try decoder.decode(ServerTasks.self, from: data)
                         
-                        DispatchQueue.main.async {
-                            promise(.success(tasks))
-                        }
+                        promise(.success(tasks))
                         
                     } catch {
-                        DispatchQueue.main.async {
-                            promise(.failure(.somethingWentWrong))
-                        }
+                        promise(.failure(.somethingWentWrong))
                     }
                 }
                 
                 task.resume()
             }
         }
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
     
