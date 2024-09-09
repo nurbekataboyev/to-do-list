@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TDLabel: UILabel {
+final class TDLabel: UILabel {
     
     init(alignment: NSTextAlignment = .left, style: UIFont.TextStyle, weight: UIFont.Weight = .regular, color: UIColor = .label) {
         super.init(frame: .zero)

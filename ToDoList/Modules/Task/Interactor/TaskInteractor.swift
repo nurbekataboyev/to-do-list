@@ -20,7 +20,7 @@ protocol TaskInteractorOutput: AnyObject {
     func didFail(with error: TDError)
 }
 
-class TaskInteractor: TaskInteractorInput {
+final class TaskInteractor: TaskInteractorInput {
     
     public weak var output: TaskInteractorOutput?
     private let coreDataService: CoreDataServiceProtocol

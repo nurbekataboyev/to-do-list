@@ -12,7 +12,7 @@ protocol UserDefaultsServiceProtocol {
     func getFetchStatus() -> Bool
 }
 
-class UserDefaultsService: UserDefaultsServiceProtocol {
+final class UserDefaultsService: UserDefaultsServiceProtocol {
     
     private let defaults = UserDefaults.standard
     private let key = UserDefaultsKeys.hasFetchedData.rawValue

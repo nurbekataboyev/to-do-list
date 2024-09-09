@@ -12,7 +12,7 @@ protocol TaskInputDelegate: AnyObject {
     func textDidChange(to text: String, for type: TaskInputType)
 }
 
-class TaskInputView: UIView {
+final class TaskInputView: UIView {
     
     public weak var delegate: TaskInputDelegate?
     

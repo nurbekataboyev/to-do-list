@@ -19,7 +19,7 @@ protocol CoreDataServiceProtocol {
     func deleteTask(_ task: TaskEntity) -> AnyPublisher<Void, TDError>
 }
 
-class CoreDataService: CoreDataServiceProtocol {
+final class CoreDataService: CoreDataServiceProtocol {
     
     private let persistentContainer: NSPersistentContainer
     private let backgroundContext: NSManagedObjectContext

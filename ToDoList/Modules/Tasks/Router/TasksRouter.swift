@@ -13,7 +13,7 @@ protocol TasksRouterProtocol {
     func showTask(for mode: TaskViewMode, animated: Bool)
 }
 
-class TasksRouter: TasksRouterProtocol {
+final class TasksRouter: TasksRouterProtocol {
     
     private weak var viewController: UIViewController?
     

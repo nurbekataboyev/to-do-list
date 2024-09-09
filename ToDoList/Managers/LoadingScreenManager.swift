@@ -12,7 +12,7 @@ protocol LoadingScreenManagerProtocol {
     func dismissLoadingScreen()
 }
 
-class LoadingScreenManager: LoadingScreenManagerProtocol {
+final class LoadingScreenManager: LoadingScreenManagerProtocol {
     
     private var containerView: UIView?
     

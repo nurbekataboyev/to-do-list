@@ -22,7 +22,7 @@ extension UIView {
     }
     
     
-    func makeVibration(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .soft) {
+    public func makeVibration(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .soft) {
         let feedbackGenerator = UIImpactFeedbackGenerator(style: style)
         feedbackGenerator.impactOccurred()
     }
