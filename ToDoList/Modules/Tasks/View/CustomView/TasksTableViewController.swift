@@ -13,7 +13,7 @@ protocol TasksTableViewDelegate: AnyObject {
     func updateStatus(_ task: TaskEntity)
 }
 
-class TasksTableViewController: UITableViewController {
+final class TasksTableViewController: UITableViewController {
     
     public weak var delegate: TasksTableViewDelegate?
     

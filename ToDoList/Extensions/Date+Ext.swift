@@ -9,7 +9,7 @@ import Foundation
 
 extension Date {
     
-    func toCustomFormat() -> String {
+    public func toCustomFormat() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "LLLL d, HH:mm"
         

@@ -15,7 +15,7 @@ protocol TasksViewProtocol: AnyObject {
     func displayLoadingScreen(_ display: Bool)
 }
 
-class TasksViewController: UIViewController {
+final class TasksViewController: UIViewController {
     
     public var presenter: TasksPresenterProtocol?
     

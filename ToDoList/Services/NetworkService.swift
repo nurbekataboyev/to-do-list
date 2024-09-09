@@ -12,7 +12,7 @@ protocol NetworkServiceProtocol {
     func fetchTasks() -> AnyPublisher<ServerTasks, TDError>
 }
 
-class NetworkService: NetworkServiceProtocol {
+final class NetworkService: NetworkServiceProtocol {
     
     private var baseURL = "https://dummyjson.com/"
     private var endpoint = "todos"

@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class TDTextView: UITextView {
+final class TDTextView: UITextView {
     
     private var placeholderLabel: TDLabel
     

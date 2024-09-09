@@ -17,7 +17,7 @@ protocol TasksPresenterProtocol {
     func showDetails(for task: TaskEntity)
 }
 
-class TasksPresenter: TasksPresenterProtocol {
+final class TasksPresenter: TasksPresenterProtocol {
     
     public weak var view: TasksViewProtocol?
     private let interactor: TasksInteractorInput

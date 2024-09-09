@@ -23,7 +23,7 @@ protocol TasksInteractorOutput: AnyObject {
     func didFail(with error: TDError)
 }
 
-class TasksInteractor: TasksInteractorInput {
+final class TasksInteractor: TasksInteractorInput {
     
     public weak var output: TasksInteractorOutput?
     private let networkService: NetworkServiceProtocol

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TDButton: UIButton {
+final class TDButton: UIButton {
     
     init(title: String? = nil, backgroundColor color: UIColor, textStyle style: UIFont.TextStyle = .headline) {
         super.init(frame: .zero)

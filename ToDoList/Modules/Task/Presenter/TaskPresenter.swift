@@ -22,7 +22,7 @@ protocol TaskManagementDelegate: AnyObject {
     func didUpdateTask(_ task: TaskEntity)
 }
 
-class TaskPresenter: TaskPresenterProtocol {
+final class TaskPresenter: TaskPresenterProtocol {
     
     public weak var view: TaskViewProtocol?
     private let interactor: TaskInteractorInput

@@ -12,7 +12,7 @@ protocol TaskCellDelegate: AnyObject {
     func updateStatus(for task: TaskEntity)
 }
 
-class TaskCell: UITableViewCell {
+final class TaskCell: UITableViewCell {
     
     public weak var delegate: TaskCellDelegate?
     

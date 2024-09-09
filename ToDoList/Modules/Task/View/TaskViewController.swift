@@ -12,7 +12,7 @@ protocol TaskViewProtocol: AnyObject {
     func displayError(_ error: TDError)
 }
 
-class TaskViewController: UIViewController {
+final class TaskViewController: UIViewController {
     
     public var presenter: TaskPresenterProtocol?
     
